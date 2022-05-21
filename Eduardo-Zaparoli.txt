@@ -1,0 +1,42 @@
+2-Faça em PL/SQL uma FUNCTION que o somatório de todos os serviços (mais de um)
+prestados para determinado cliente.
+
+CREATE OR REPLACE FUNCTION f_somaServicos(varCliente NUMBER)
+RETURN NUMBER IS
+    varSomaServico NUMBER;
+BEGIN
+    SELECT SUM(servico.valor) INTO varSomaServico
+    FROM   cliente INNER JOIN hospedagem ON
+           cliente.rg = hospedagem.rg
+           INNER JOIN atendimento ON
+           hospedagem.id_hospedagem = atendimento.id_hospedagem
+           INNER JOIN servico ON
+           servico.id_servico = atendimento.id_servico
+    WHERE  cliente.rg = varCliente;
+    RETURN varSomaServico;
+END f_somaServicos;
+
+SELECT f_somaServicos(8899) FROM dual;
+
+
+3-Faça em PL/SQL um PROCEDURE que efetue uma reserva. Verifique se o quarto
+está disponivel (Status D - disponivel, R - reservado, O - ocupado.
+
+CREATE or replace PROCEDURE fazerReserva(varIdReserva NUMBER, varRg NUMBER, 
+varNumQuarto NUMBER, varDtReserva DATE, varqtdDias NUMBER, vardtEntrada DATE, varStatus VARCHAR) IS
+    varStatusQuarto CHAR;
+BEGIN
+    SELECT status INTO varStatusQuarto
+    FROM quarto
+    WHERE num_quarto = varNumQuarto;
+    IF(varStatusQuarto = 'D') THEN
+     INSERT INTO reserva VALUES(varIdReserva, varRg, varNumQuarto, varDtReserva, varqtdDias, vardtEntrada, varStatus);
+    UPDATE quarto
+    SET status = 'R'
+    WHERE num_quarto = varNumQuarto;
+    END IF;
+END fazerReserva;
+  
+   EXEC fazerReserva(10, 8899,404,'20/02/2022',20,'28/02/2022','D');
+   EXEC fazerReserva(11, 8899,405,'20/02/2022',21,'28/02/2022','D');
+   SELECT * FROM reserva
